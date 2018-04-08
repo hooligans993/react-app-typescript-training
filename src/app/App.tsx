@@ -1,10 +1,12 @@
 import * as React from 'react';
 import '../style/App.css';
+import '../../node_modules/antd/dist/antd.css';
 import '../style/bootstrap-material-design.css';
 import Order from './IOrder';
 import * as _ from 'lodash';
 import InputsValidator from './Validate';
 import { initialValidatorState, orders } from './consts';
+import PicturesWall from './components/PicturesWall';
 
 const logo = require('../img/logo.svg');
 
@@ -12,7 +14,7 @@ class App extends React.Component<{},
     { orders: Order[], checkedAll: boolean, validatorState: InputsValidator[] }> {
     constructor(props: {}) {
         super(props);
-        this.state = {orders, checkedAll: false, validatorState: initialValidatorState };
+        this.state = {orders, checkedAll: false, validatorState: initialValidatorState};
     }
 
     public render() {
@@ -22,6 +24,8 @@ class App extends React.Component<{},
                     <img src={logo} className="App-logo" alt="logo"/>
                     <h1 className="App-title">Order Table</h1>
                 </header>
+
+                <PicturesWall/>
 
                 <div>
                     <table className="table table-hover">
