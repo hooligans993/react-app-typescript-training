@@ -2,6 +2,7 @@ import { Button, Upload, Icon, Modal } from 'antd';
 import * as React from 'react';
 import { UploadFileStatus } from 'antd/lib/upload/interface';
 import ImageCompressor from 'image-compressor.js';
+
 interface UploadFile {
     uid: number;
     size: number;
@@ -13,7 +14,6 @@ interface UploadFile {
     url?: string;
     thumbUrl?: string;
 }
-
 interface UploadChangeParam {
     file: UploadFile;
     fileList: Array<UploadFile>;
@@ -21,14 +21,20 @@ interface UploadChangeParam {
         percent: number;
     };
 }
-
 interface PicturesWallState {
     previewVisible: boolean;
     previewImage: string;
     fileList: Array<UploadFile>;
     compressedImages: Array<File>;
+    compressInProgress: boolean;
 }
-const initialState: PicturesWallState = { previewVisible: false, previewImage: '', fileList: [], compressedImages: [] };
+const initialState: PicturesWallState = {
+    previewVisible: false,
+    previewImage: '',
+    fileList: [],
+    compressedImages: [],
+    compressInProgress: false,
+};
 
 const compressor = new ImageCompressor();
 
@@ -59,7 +65,12 @@ export default class PicturesWall extends React.Component<{}, PicturesWallState>
                 </Modal>
                 {fileList.length > 0 &&
                 <div>
-                    <Button onClick={this.compressImages} type="primary" icon="setting">
+                    <Button
+                        loading={this.state.compressInProgress}
+                        onClick={this.compressImages}
+                        type="primary"
+                        icon="setting"
+                    >
                         Compress
                     </Button>
                 </div>
@@ -84,32 +95,17 @@ export default class PicturesWall extends React.Component<{}, PicturesWallState>
         });
     }
 
-    private handleChange = (change: UploadChangeParam) => {
-        const compressedImagesFiles: Array<File> = this.state.compressedImages;
-        compressor.compress(change.file.originFileObj, getCompressConfig()).then((s: File) => {
-            compressedImagesFiles.push(s);
-            console.log('success compress', s);
-         });
-        this.setState({fileList: change.fileList, compressedImages: compressedImagesFiles});
-    }
+    private handleChange = (change: UploadChangeParam) => { this.setState({fileList: change.fileList}); };
 
     private compressImages = () => {
-        const compressedImagesFiles: Array<File> = this.state.compressedImages;
-        // const compressor = new ImageCompressor();
-        // this.state.fileList.map((file) => {
-        //     const success = (compressedFile: File) => compressedImagesFiles.push(compressedFile);
-        //     const error = (e: Error) => console.log('Error', e);
-        //     if (file) {
-        //         compressor.compress(file.originFileObj, getCompressConfig(success, error)).then((success) =>{
-        //             this.setState({ compressedImages: compressedImagesFiles });
-        //             console.log('success compress', success);
-        //         });
-        //     }
-        // });
-
-        console.log('comp', compressedImagesFiles);
-        console.log('comp lenght', compressedImagesFiles.length);
-
+        this.state.fileList.map((file) => {
+            this.setState({compressInProgress: true});
+            compressor.compress(file.originFileObj, getCompressConfig()).then((s: File) => {
+                const compressedImagesFiles: Array<File> = this.state.compressedImages;
+                compressedImagesFiles.push(s);
+                this.setState({compressedImages: compressedImagesFiles, compressInProgress: false});
+            });
+        });
     }
 
     private convertToBase64 = () => {
